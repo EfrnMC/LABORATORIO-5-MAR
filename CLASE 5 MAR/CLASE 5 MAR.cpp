@@ -6,17 +6,19 @@ private:
     double saldo;
     int numeroCuenta;
     bool activa;
+    int intentosFallidos;
 
 public:
     CuentaBancaria(int num, double saldoInicial = 0) {
         numeroCuenta = num;
         saldo = saldoInicial;
         activa = true; // Todas las cuentas inician activas
+        intentosFallidos = 0;
     }
 
     void depositar(double monto) {
         if (!activa) {
-            cout << "Error: La cuenta #" << numeroCuenta << " está inactiva. No se puede depositar." << endl;
+            cout << "Error: La cuenta #" << numeroCuenta << " esta inactiva. No se puede depositar." << endl;
             return;
         }
         saldo += monto;
@@ -25,14 +27,21 @@ public:
 
     void retirar(double monto) {
         if (!activa) {
-            cout << "Error: La cuenta #" << numeroCuenta << " está inactiva. No se puede retirar dinero." << endl;
+            cout << "Error: La cuenta #" << numeroCuenta << " esta inactiva. No se puede retirar dinero." << endl;
             return;
         }
+
         if (monto > saldo) {
-            cout << "Fondos insuficientes." << endl;
-        }
-        else {
+            intentosFallidos++;
+            cout << "---ADVERTENCIA----Fondos insuficientes. Intento " << intentosFallidos << " de 3." << endl;
+
+            if (intentosFallidos >= 3) {
+                inhabilitarCuenta();
+                cout << "Cuenta bloqueada por intentos fallidos de retiro." << endl;
+            }
+        } else {
             saldo -= monto;
+            intentosFallidos = 0; // Reinicia el contador de intentos fallidos al retirar con exito
             cout << "Retiro exitoso. Nuevo saldo: Q" << saldo << endl;
         }
     }
@@ -44,11 +53,13 @@ public:
 
     void inhabilitarCuenta() {
         activa = false;
+        intentosFallidos = 0; // Reinicia intentos al inhabilitar la cuenta
         cout << "La cuenta #" << numeroCuenta << " ha sido INHABILITADA." << endl;
     }
 
     void habilitarCuenta() {
         activa = true;
+        intentosFallidos = 0; // Reinicia intentos al habilitar la cuenta
         cout << "La cuenta #" << numeroCuenta << " ha sido HABILITADA." << endl;
     }
 
@@ -65,7 +76,7 @@ int main() {
     int numCuenta, opcion;
     double monto;
     bool salir = false;
-    CuentaBancaria cuenta(0, 0); // Cuenta inicial sin número válido
+    CuentaBancaria cuenta(0, 0); // Cuenta inicial sin numero valido
 
     do {
         cout << "\nIngrese el numero de cuenta (1-30) o 0 para salir: ";
@@ -116,8 +127,7 @@ int main() {
             case 5:
                 if (cuenta.estaActiva()) {
                     cuenta.inhabilitarCuenta();
-                }
-                else {
+                } else {
                     cuenta.habilitarCuenta();
                 }
                 break;
